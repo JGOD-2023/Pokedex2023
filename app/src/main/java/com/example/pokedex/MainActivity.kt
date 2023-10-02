@@ -5,34 +5,38 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import coil.compose.rememberImagePainter
+import com.example.pokedex.model.Pokemon
 import com.example.pokedex.ui.theme.PokedexTheme
+import com.example.pokedex.ui.theme.list.PokemonScreen
+import com.example.pokedex.ui.theme.list.PokemonViewModel
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,90 +48,83 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+                    // Inicializa el ViewModel
+                    val viewModel: PokemonViewModel = viewModel()
+                    viewModel.getPokemon()
 
-                    ScreenMain()
+                    // Pantalla principal
+                    PokemonScreen(viewModel = viewModel)
                 }
             }
         }
     }
 }
-
-
 @Composable
-@Preview
-fun ScreenMain() {
-    val roundCornerShape = RoundedCornerShape(10.dp)
-    Column(
+fun PokemonCard(pokemon: Pokemon?) {
+    Card(
         modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .padding(start = 0.dp, end = 0.dp, top = 10.dp, bottom = 0.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .fillMaxWidth()
+            .padding(16.dp)
     ) {
-        Image(
-            modifier = Modifier
-                .width(350.dp)
-                .height(150.dp),
-            painter = painterResource(id = R.drawable.img), contentDescription = "Logo emblema"
-        )
-
-        mySpacer(size = 10)
-        Box(
-            modifier = Modifier
-                .width(400.dp)
-                .height(200.dp)
-                .padding(start = 10.dp, end = 10.dp, top = 0.dp, bottom = 0.dp)
-                .border(
-                    width = 2.8.dp,
-                    color = Color.Red.copy(alpha = 0.6f),
-                    shape = RoundedCornerShape(32.dp)
-                )
+        Column(
+            modifier = Modifier.padding(16.dp)
         ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-
+            if (pokemon != null) {
                 Image(
+                    painter = rememberImagePainter(data = pokemon.sprites.front_default),
+                    contentDescription = "Pokemon Image",
                     modifier = Modifier
-                        .width(350.dp)
-                        .height(150.dp)
-                        .padding(10.dp), painter = painterResource(
-                        id = R.drawable.img_1
-                    ), contentDescription = "darkrai"
+                        .size(120.dp)
+                        .align(Alignment.CenterHorizontally),
+                    contentScale = ContentScale.Crop
                 )
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Nombre = Darkrai",
-                    color = Color.Blue,
-                    fontSize = 25.sp,
-                    fontStyle = FontStyle.Italic,
-                    fontFamily = FontFamily.SansSerif
+                    text = pokemon.name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            } else {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .align(Alignment.CenterHorizontally)
                 )
             }
         }
-        OutlinedButton(
+    }
+}
+/*@Composable
+@Preview
+fun ScreenMain() {
+
+
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(8.dp)
+    ) {
+        AsyncImage(
+            model = pokemonLista[1].imageUrl,
+            "Pokémon image",
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 10.dp, end = 10.dp, top = 10.dp),
-            enabled = true,
-            onClick = {
-            }, colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = Color.Red,
-                contentColor = Color.White,
-                disabledContainerColor = Color.DarkGray,
-                disabledContentColor = Color.White
-            ), shape = roundCornerShape
-        ) {
-            Text(text = "Capturar", fontSize = 15.sp)
-        }
-        mySpacer(size = 10)
-        Text(
-            text = "Información: Has recorrido 10 mts",
-            color = Color.Red,
-            fontSize = 15.sp,
-            fontStyle = FontStyle.Normal,
-            fontFamily = FontFamily.Monospace
+                .size(60.dp)
+                .clip(CircleShape)
+                .background(Color.Gray.copy(alpha = 0.1f))
+                .padding(8.dp)
         )
+        Text(
+            "#${pokemonLista[1].id}",
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Light,
+            modifier = Modifier.padding(4.dp)
+        )
+        Text(
+            pokemonLista[1].name.replaceFirstChar { it.uppercase() },
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium
+        )
+        Spacer(modifier = Modifier.fillMaxWidth())
     }
 }
 @Composable
@@ -138,5 +135,5 @@ fun mySpacer(size: Int) {
             .width(0.dp)
     )
 
-}
+}*/
 
